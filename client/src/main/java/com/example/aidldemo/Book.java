@@ -7,7 +7,8 @@ import android.os.Parcelable;
  * Created by hp on 2019/6/14.
  */
 public class Book implements Parcelable {
-
+    //static transient
+    //private static final long serialVersionUID = 000000;
     public int bookId;
     public String bookName;
 
@@ -48,5 +49,4 @@ public class Book implements Parcelable {
     public String toString() {
         return String.format("[bookId:%s, bookName:%s]", bookId, bookName);
     }
-
 }
