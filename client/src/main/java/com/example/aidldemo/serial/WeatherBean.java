@@ -12,6 +12,8 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 /**
+ * java的接口，开销大，需要大量IO操作，如果是存储硬盘，建议serializable
+ * 无法序列化静态及 transient
  * Serializable 序列化
  * Created by hp on 2019/9/16.
  */
@@ -20,7 +22,7 @@ public class WeatherBean implements Serializable {
     private static final int serialVersionUID = 1010010101;
     public String conditionId;
     public String conditionName;
-    public int age;
+    public transient int age;
 
     public WeatherBean(String conditionId, String conditionName) {
         this.conditionId = conditionId;
@@ -38,6 +40,7 @@ public class WeatherBean implements Serializable {
 
     /**
      * 序列化与反序列化，对象内容一样，但是不是同一个对象
+     *
      * @param file
      */
     private void serialWeather(File file) {
