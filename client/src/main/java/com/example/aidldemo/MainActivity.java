@@ -83,11 +83,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void bindServices() {//com.example.aidldemo.ACCESS_BOOK_SERVICE
-        int checkResult = checkCallingOrSelfPermission("com.example.aidldemo.ACCESS_BOOK_SERVICE");
-        if (checkResult == PackageManager.PERMISSION_DENIED) {
-            Log.e(TAG, "onBind failed,permission deny!");
-            return;
-        }
+//        int checkResult = checkCallingOrSelfPermission("com.example.aidldemo.ACCESS_BOOK_SERVICE");
+//        if (checkResult == PackageManager.PERMISSION_DENIED) {
+//            Log.e(TAG, "onBind failed,permission deny!");
+//            return;
+//        }
         Intent intent = new Intent();
         intent.setClassName("com.example.aidldemo", "com.example.aidldemo.BookManagerService");
 //        intent.setAction("com.example.aidldemo");
