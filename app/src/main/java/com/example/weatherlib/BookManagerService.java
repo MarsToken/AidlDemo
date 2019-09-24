@@ -5,8 +5,6 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.example.weatherlib.BindPoolImpl;
-
 /*
  *1.Messenger是对aidl的封装，用handler传递消息，使用简单： 一次只能处理一个请求，不存在并发情况（handler的原因）
  * 只适合传递信息，而不是调用方法

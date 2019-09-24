@@ -2,6 +2,7 @@ package com.example.weatherlib;
 
 import android.os.Build;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
@@ -15,6 +16,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Created by hp on 2019/9/20.
  */
 public class BookManagerImpl extends IBookManager.Stub {
+    public BookManagerImpl() {
+        initBook();
+    }
     private static final String TAG = "BookManagerImpl";
     private static final int UPDATE_BOOK = 1;
     //支持并发读写
@@ -52,7 +56,7 @@ public class BookManagerImpl extends IBookManager.Stub {
     }
 
     private int count = 0;
-    private Handler mHandler = new Handler() {
+    private Handler mHandler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
@@ -90,7 +94,7 @@ public class BookManagerImpl extends IBookManager.Stub {
         android.os.Process.killProcess(android.os.Process.myPid());
     }
 
-    private void initBook() {
+    public void initBook() {
         mBookList.add(new Book(1, "Android"));
         mBookList.add(new Book(2, "IOS"));
         mHandler.sendEmptyMessageDelayed(UPDATE_BOOK, 3000);

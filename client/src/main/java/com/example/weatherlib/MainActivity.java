@@ -65,8 +65,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //bindServices();
-        BinderPool binderPool = BinderPool.getInstance(this);
-        binderPool.initBindPool(Constant.BIND_BOOK);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                BinderPool.getInstance(MainActivity.this).initBindPool(Constant.BIND_BOOK);
+            }
+        }).start();
+        //BinderPool binderPool = BinderPool.getInstance(this);
+        //binderPool.initBindPool(Constant.BIND_BOOK);
         Log.e("tag", "onCreate finished!");
     }
 
