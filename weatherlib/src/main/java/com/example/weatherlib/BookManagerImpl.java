@@ -19,6 +19,7 @@ public class BookManagerImpl extends IBookManager.Stub {
     public BookManagerImpl() {
         initBook();
     }
+
     private static final String TAG = "BookManagerImpl";
     private static final int UPDATE_BOOK = 1;
     //支持并发读写
@@ -67,7 +68,7 @@ public class BookManagerImpl extends IBookManager.Stub {
                         e.printStackTrace();
                     }
                     if (count == 3) {
-                        //killSelf();
+                        killSelf();
                         count = 0;
                     }
                     count++;

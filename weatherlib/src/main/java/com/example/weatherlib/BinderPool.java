@@ -11,7 +11,6 @@ import android.os.Message;
 import android.os.RemoteException;
 import android.util.Log;
 
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -30,15 +29,17 @@ public class BinderPool {
             switch (msg.what) {
                 case UPDATE_BOOK:
                     Book book = (Book) msg.obj;
-                    Log.e("tag", book.toString());
+                    if (null != onBookUpdateListener) {
+                        onBookUpdateListener.onBookUpdate(book);
+                    }
+                    //Log.e("tag", book.toString());
                     break;
             }
         }
     };
 
     private BinderPool(Context context) {
-        mContext = context;//.getApplicationContext();
-        connectBinderPoolService();
+        mContext = context.getApplicationContext();
     }
 
     public static BinderPool getInstance(Context context) {
@@ -52,18 +53,22 @@ public class BinderPool {
         return sInstance;
     }
 
-    private synchronized void connectBinderPoolService() {
-        mConnectBinderPoolCountDownLatch = new CountDownLatch(1);
+    private int mServiceType;
+
+    public synchronized BinderPool connectBinderPoolService(int type) {
+        mServiceType = type;
+        //mConnectBinderPoolCountDownLatch = new CountDownLatch(1);
         Intent intent = new Intent();
         intent.setClassName("com.example.weatherlib", "com.example.weatherlib.BookManagerService");
 //        intent.setAction("com.example.weatherlib");
 //        intent.setPackage("com.example.aidldemo");
         mContext.bindService(intent, mBinderPoolConnection, Context.BIND_AUTO_CREATE);
-        try {
-            mConnectBinderPoolCountDownLatch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            mConnectBinderPoolCountDownLatch.await();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+        return this;
     }
 
     private ServiceConnection mBinderPoolConnection = new ServiceConnection() {
@@ -71,7 +76,6 @@ public class BinderPool {
         @Override
         public void onServiceDisconnected(ComponentName name) {
             Log.e(TAG, "onServiceDisconnected=" + name);
-            mBinderPool = null;
         }
 
         @Override
@@ -80,11 +84,17 @@ public class BinderPool {
             mBinderPool = IBindPool.Stub.asInterface(service);
             try {
                 mBinderPool.asBinder().linkToDeath(mBinderPoolDeathRecipient, 0);
-                //initBindPool(Constant.BIND_BOOK);
+                IBinder bookBinder = searchBinder(mServiceType);
+                IBookManager manager = BookManagerImpl.asInterface(bookBinder);
+                try {
+                    manager.registerUpdateListener(mUpdateBookListener);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
-            mConnectBinderPoolCountDownLatch.countDown();
+            //mConnectBinderPoolCountDownLatch.countDown();
         }
     };
 
@@ -94,21 +104,9 @@ public class BinderPool {
             Log.e(TAG, "binder died.");
             mBinderPool.asBinder().unlinkToDeath(mBinderPoolDeathRecipient, 0);
             mBinderPool = null;
-            connectBinderPoolService();
+            connectBinderPoolService(mServiceType);
         }
     };
-
-    public void initBindPool(int type) {
-        Log.e("tag", "initBindPool!");
-        IBinder bookBinder = searchBinder(type);
-        IBookManager manager = BookManagerImpl.asInterface(bookBinder);
-        try {
-            manager.registerUpdateListener(mUpdateBookListener);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-        Log.e(TAG, "visit bookManager");
-    }
 
     private IBinder searchBinder(int binderCode) {
         IBinder binder = null;
@@ -126,11 +124,10 @@ public class BinderPool {
         @Override
         public void onNewBookArrived(Book newBook) throws RemoteException {
             mHandler.obtainMessage(UPDATE_BOOK, newBook).sendToTarget();
-            Log.e("tag", newBook.toString());
         }
     };
 
-    public void onDestroy(int type) {
+    public void unBindService(int type) {
         IBinder bookBinder = searchBinder(type);
         IBookManager manager = BookManagerImpl.asInterface(bookBinder);
         if (bookBinder.isBinderAlive()) {
@@ -141,5 +138,27 @@ public class BinderPool {
             }
         }
         mContext.unbindService(mBinderPoolConnection);
+    }
+
+    private void initBindPool(int type) {
+        Log.e("tag", "initBindPool!");
+        IBinder bookBinder = searchBinder(type);
+        IBookManager manager = BookManagerImpl.asInterface(bookBinder);
+        try {
+            manager.registerUpdateListener(mUpdateBookListener);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        Log.e(TAG, "visit bookManager");
+    }
+
+    private OnBookUpdateListener onBookUpdateListener;
+
+    public void setBookUpdateListener(OnBookUpdateListener listener) {
+        onBookUpdateListener = listener;
+    }
+
+    public interface OnBookUpdateListener {
+        void onBookUpdate(Book book);
     }
 }

@@ -65,18 +65,24 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //bindServices();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                BinderPool.getInstance(MainActivity.this).initBindPool(Constant.BIND_BOOK);
-            }
-        }).start();
+        BinderPool.getInstance(this).connectBinderPoolService(Constant.BIND_BOOK)
+                .setBookUpdateListener(new BinderPool.OnBookUpdateListener() {
+                    @Override
+                    public void onBookUpdate(Book book) {
+                        Log.e(TAG, book.toString());
+                    }
+                });
         //BinderPool binderPool = BinderPool.getInstance(this);
         //binderPool.initBindPool(Constant.BIND_BOOK);
         Log.e("tag", "onCreate finished!");
     }
 
-//    private void bindServices() {//com.example.aidldemo.ACCESS_BOOK_SERVICE
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        BinderPool.getInstance(this).unBindService(Constant.BIND_BOOK);
+    }
+    //    private void bindServices() {//com.example.aidldemo.ACCESS_BOOK_SERVICE
 ////        int checkResult = checkCallingOrSelfPermission("com.example.aidldemo.ACCESS_BOOK_SERVICE");
 ////        if (checkResult == PackageManager.PERMISSION_DENIED) {
 ////            Log.e(TAG, "onBind failed,permission deny!");
